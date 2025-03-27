@@ -2,41 +2,60 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
 puppeteer.use(StealthPlugin());
 
-// Parámetros desde consola
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
 const args = process.argv.slice(2);
 const accountId = args[0] || 'default';
 const isSetup = args.includes('--setup');
 const isHeadless = !args.includes('--no-headless');
 const saveScreenshots = !args.includes('--no-screenshots');
 
-const POSTS_PATH = path.join(__dirname, 'posts.json');
-const postData = JSON.parse(fs.readFileSync(POSTS_PATH, 'utf-8'));
-const getRandomPost = () => {
-    const posts = postData.posts;
-    return posts[Math.floor(Math.random() * posts.length)];
-};
-
-const userDataDir = path.join(__dirname, `.profile-${accountId}`);
-const screenshotsDir = path.join(__dirname, `screenshots-${accountId}`);
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
-
-let screenshotIndex = 0;
-const screenshot = async (page, label) => {
-    if (!saveScreenshots) return;
-    const file = path.join(screenshotsDir, `${String(screenshotIndex++).padStart(2, '0')}_${label}.png`);
-    await page.screenshot({ path: file });
-};
-
-const clickAt = async (page, x, y, label) => {
-    await page.mouse.move(x, y, { steps: 20 });
-    await page.mouse.click(x, y);
-    await screenshot(page, `click_${label}`);
+const askLanguage = () => {
+    return new Promise(resolve => {
+        rl.question('🌐 Escoge el lenguaje de los posts (en/es): ', answer => {
+            const lang = answer.trim().toLowerCase();
+            if (lang !== 'en' && lang !== 'es') {
+                console.log('❌ Opción inválida. Utilizando Español.');
+                resolve('es');
+            } else {
+                resolve(lang);
+            }
+        });
+    });
 };
 
 (async () => {
+    const language = await askLanguage();
+    rl.close();
+
+    const POSTS_PATH = path.join(__dirname, `${language === 'es' ? 'ES_Posts.json' : 'EN_Posts.json'}`);
+    const postData = JSON.parse(fs.readFileSync(POSTS_PATH, 'utf-8'));
+    const getRandomPost = () => {
+        const posts = postData.posts;
+        return posts[Math.floor(Math.random() * posts.length)];
+    };
+
+    const userDataDir = path.join(__dirname, `.profile-${accountId}`);
+    const screenshotsDir = path.join(__dirname, `screenshots-${accountId}`);
+    if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+
+    let screenshotIndex = 0;
+    const screenshot = async (page, label) => {
+        if (!saveScreenshots) return;
+        const file = path.join(screenshotsDir, `${String(screenshotIndex++).padStart(2, '0')}_${label}.png`);
+        await page.screenshot({ path: file });
+    };
+
+    const clickAt = async (page, x, y, label) => {
+        await page.mouse.move(x, y, { steps: 20 });
+        await page.mouse.click(x, y);
+        await screenshot(page, `click_${label}`);
+    };
+
     const browser = await puppeteer.launch({
         headless: isHeadless ? 'new' : false,
         defaultViewport: { width: 1280, height: 800 },
@@ -61,7 +80,6 @@ const clickAt = async (page, x, y, label) => {
         process.exit();
     }
 
-    // Validación visual
     await screenshot(page, '03_validando_login_visualmente');
     console.log("🧿 Asumiendo login correcto porque no se puede verificar por DOM.");
 

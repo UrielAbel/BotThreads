@@ -2,16 +2,34 @@
 chcp 65001 > nul
 setlocal enabledelayedexpansion
 
+echo ================================
+echo     BOT DE THREADS - SORU AGENCY
+echo ================================
+echo.
+
+:: ==========================
+:: VERIFICAR DEPENDENCIAS
+:: ==========================
+if not exist "node_modules" (
+    echo No se encontraron dependencias. Instalando con npm install...
+    call npm install
+    if %ERRORLEVEL% NEQ 0 (
+        echo ❌ Error durante la instalación de dependencias.
+        pause
+        exit /b 1
+    )
+    echo 📦 Dependencias instaladas correctamente.
+    echo.
+) else (
+    echo ✔️ Dependencias ya instaladas.
+    echo.
+)
+
 :: Archivo donde se guarda la ultima cuenta usada
 set lastFile=last_account.txt
 if exist %lastFile% (
     set /p lastAccount=<%lastFile%
 )
-
-echo ================================
-echo     BOT DE THREADS - SORU AGENCY
-echo ================================
-echo.
 
 :ask_account
 set /p newAcc="Queres usar una cuenta existente (E) o crear una nueva (N)? [E/N]: "
@@ -64,5 +82,5 @@ echo ================================
 echo.
 
 :: Ejecutar el bot con los flags correspondientes
-node v12.js !accountId! !setupFlag! !headlessFlag! !screenshotsFlag!
+node index.js !accountId! !setupFlag! !headlessFlag! !screenshotsFlag!
 pause
