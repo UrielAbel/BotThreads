@@ -1,0 +1,11 @@
+# Archivos sensibles
+cookies.json
+last_account.txt
+
+# Carpetas generadas automáticamente
+node_modules/
+screenshots-*/
+.profile-*/
+
+# Archivos de control innecesarios
+package-lock.json
