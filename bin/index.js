@@ -97,7 +97,21 @@ const askLanguage = () => {
             await clickAt(page, 500, 360, 'escribir_post');
             await new Promise(resolve => setTimeout(resolve, 5000));
             await page.keyboard.type(postText, { delay: 50 });
-            await screenshot(page, 'texto_escrito');
+            await screenshot(page, 'texto_escrito_original');
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Borrar letra por letra
+            for (let i = 0; i < postText.length; i++) {
+                await page.keyboard.press('Backspace');
+                await new Promise(r => setTimeout(r, 30)); // velocidad de borrado
+            }
+            await screenshot(page, 'texto_borrado');
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Escribir de nuevo
+            await page.keyboard.type(postText, { delay: 50 });
+            await screenshot(page, 'texto_reescrito');
+
 
             const publishYs = [490, 510, 530];
             for (let y of publishYs) {
