@@ -95,6 +95,7 @@ const askLanguage = () => {
             await screenshot(page, 'modal_abierto');
 
             await clickAt(page, 500, 360, 'escribir_post');
+            await new Promise(resolve => setTimeout(resolve, 5000));
             await page.keyboard.type(postText, { delay: 50 });
             await screenshot(page, 'texto_escrito');
 
